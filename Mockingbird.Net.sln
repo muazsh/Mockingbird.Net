@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34009.444
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mockingbird.Net", "Mockingbird.Net\Mockingbird.Net.csproj", "{1399DACE-1A25-41E4-B42A-2DF997832F32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{A006D00E-1385-4499-B9E9-1F3D936F63F0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1399DACE-1A25-41E4-B42A-2DF997832F32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1399DACE-1A25-41E4-B42A-2DF997832F32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1399DACE-1A25-41E4-B42A-2DF997832F32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1399DACE-1A25-41E4-B42A-2DF997832F32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A006D00E-1385-4499-B9E9-1F3D936F63F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A006D00E-1385-4499-B9E9-1F3D936F63F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A006D00E-1385-4499-B9E9-1F3D936F63F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A006D00E-1385-4499-B9E9-1F3D936F63F0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C5089E65-E3C3-4CA0-9619-AE4E1471F493}
+	EndGlobalSection
+EndGlobal
