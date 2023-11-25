@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using MockingbirdDotNet;
 using System.Reflection;
+using System;
 
 namespace Test
 {
