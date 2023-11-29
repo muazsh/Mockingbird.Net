@@ -41,11 +41,10 @@ namespace Test
         [TestMethod]
         public void MockMethods()
         {
-            var factory = new Mockingbird();
-            var newType = factory.Build(typeof(IInterface));
-            var printDelegate = Delegate.CreateDelegate(factory.DelegateTypes[0], typeof(Mocks).GetMethod("MockToString"));
-            var sumDelegate = Delegate.CreateDelegate(factory.DelegateTypes[1], typeof(Mocks).GetMethod("MockSum"));
-            object obj = Activator.CreateInstance(newType, printDelegate, sumDelegate);
+            var types = Mockingbird.Build(typeof(IInterface));
+            var printDelegate = Delegate.CreateDelegate(types.MethodsDelegates[0], typeof(Mocks).GetMethod("MockToString"));
+            var sumDelegate = Delegate.CreateDelegate(types.MethodsDelegates[1], typeof(Mocks).GetMethod("MockSum"));
+            object obj = Activator.CreateInstance(types.InterfaceImplementation, printDelegate, sumDelegate);
 
             Assert.AreEqual(ToString((IInterface)obj), "ToString Mock" );
             Assert.AreEqual(Sum((IInterface)obj, 10, 10), 20);
@@ -54,11 +53,10 @@ namespace Test
         [TestMethod]
         public void TestDateProperty()
         {
-            var factory = new Mockingbird();
-            var newType = factory.Build(typeof(IInterface));
-            object obj = Activator.CreateInstance(newType);
+            var types = Mockingbird.Build(typeof(IInterface));
+            object obj = Activator.CreateInstance(types.InterfaceImplementation);
 
-            var dateProperty = newType.GetProperty("Date");
+            var dateProperty = types.InterfaceImplementation.GetProperty("Date");
             Assert.ThrowsException<TargetInvocationException>(() => dateProperty.GetValue(obj));
             Assert.ThrowsException<TargetInvocationException>(() => dateProperty.SetValue(obj, null));
 

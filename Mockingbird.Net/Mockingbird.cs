@@ -3,13 +3,23 @@ using System.Reflection;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 
 namespace MockingbirdDotNet
 {
-    public class Mockingbird
+    public class Types
     {
-        public Type[]? DelegateTypes { get; private set; }
-        public Type Build(Type pType)
+        public Type InterfaceImplementation { get; private set; }
+        public Type[] MethodsDelegates { get; private set; }
+        public Types(Type pInterfaceImplementation, Type[] pMethodsDelegates) 
+        {
+            InterfaceImplementation = pInterfaceImplementation; 
+            MethodsDelegates = pMethodsDelegates;
+        }
+    }
+    public static class Mockingbird
+    {
+        public static Types Build(Type pType)
         {
             var assemblyName = new AssemblyName("DynamicAssembly" + pType.Name);
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
@@ -17,10 +27,10 @@ namespace MockingbirdDotNet
             var typeName = "Mock" + pType.Name;
 
             var methods = pType.GetMethods(BindingFlags.Instance | BindingFlags.Public).Where(method => !method.IsSpecialName).ToArray();
-            DelegateTypes = new Type[methods.Length];
+            var delegateTypes = new Type[methods.Length];
             for (int i = 0; i < methods.Length; i++)
             {
-                DelegateTypes[i] = typeof(int);
+                delegateTypes[i] = typeof(int);
             }
 
             var typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public);
@@ -29,25 +39,25 @@ namespace MockingbirdDotNet
             var properties = pType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
             BuildProperties(typeBuilder, properties);
 
-            BuildDelegates(moduleBuilder, methods, DelegateTypes);
+            BuildDelegates(moduleBuilder, methods, delegateTypes);
 
             ConstructorBuilder defaultConstructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
             defaultConstructorBuilder.GetILGenerator().Emit(OpCodes.Ldarg_0);
             defaultConstructorBuilder.GetILGenerator().Emit(OpCodes.Call, typeof(object).GetConstructor(Type.EmptyTypes));
             defaultConstructorBuilder.GetILGenerator().Emit(OpCodes.Ret);
 
-            ConstructorBuilder constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, DelegateTypes);
+            ConstructorBuilder constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, delegateTypes);
             ILGenerator ctorILGenerator = constructorBuilder.GetILGenerator();
-            for (int i = 0; i < DelegateTypes.Length; i++)
+            for (int i = 0; i < delegateTypes.Length; i++)
             {
-                BuildMethod(typeBuilder, ctorILGenerator, methods[i], DelegateTypes[i], i + 1);
+                BuildMethod(typeBuilder, ctorILGenerator, methods[i], delegateTypes[i], i + 1);
             }
             ctorILGenerator.Emit(OpCodes.Ret);
 
-            return typeBuilder.CreateType();
+            return new Types(typeBuilder.CreateType(), delegateTypes);
         }
 
-        private void BuildProperties(TypeBuilder pTypeBuilder, IEnumerable<PropertyInfo> pProperties)
+        private static void BuildProperties(TypeBuilder pTypeBuilder, IEnumerable<PropertyInfo> pProperties)
         {
             foreach (var property in pProperties)
             {
@@ -55,7 +65,7 @@ namespace MockingbirdDotNet
             }
         }
 
-        private void BuildDelegates(ModuleBuilder pModuleBuilder, IEnumerable<MethodInfo> pMethods, Type[] pDelegateTypes)
+        private static void BuildDelegates(ModuleBuilder pModuleBuilder, IEnumerable<MethodInfo> pMethods, Type[] pDelegateTypes)
         {
             for (int i = 0; i < pMethods.Count(); i++)
             {
@@ -63,7 +73,7 @@ namespace MockingbirdDotNet
             }
         }
 
-        private void BuildMethod(TypeBuilder pTypeBuilder, ILGenerator pCtorILGenerator, MethodInfo pMethodInfo, Type pDelegateType, int pMethodIndex)
+        private static void BuildMethod(TypeBuilder pTypeBuilder, ILGenerator pCtorILGenerator, MethodInfo pMethodInfo, Type pDelegateType, int pMethodIndex)
         {
             pCtorILGenerator.Emit(OpCodes.Ldarg_0);
             pCtorILGenerator.Emit(OpCodes.Ldarg, pMethodIndex);
@@ -82,7 +92,7 @@ namespace MockingbirdDotNet
             methodILGenerator.Emit(OpCodes.Ret);
         }
 
-        private void BuildDelegate(ModuleBuilder pModuleBuilder, MethodInfo pMethodInfo, ref Type pDelegateType)
+        private static void BuildDelegate(ModuleBuilder pModuleBuilder, MethodInfo pMethodInfo, ref Type pDelegateType)
         {
             var delegateBuilder = pModuleBuilder.DefineType(
                 pMethodInfo.Name + "Delegate", TypeAttributes.Public | TypeAttributes.AutoClass | TypeAttributes.Sealed, typeof(MulticastDelegate));
@@ -102,7 +112,7 @@ namespace MockingbirdDotNet
 
         }
 
-        private void BuildProperty(TypeBuilder pTypeBuilder, PropertyInfo pProperty)
+        private static void BuildProperty(TypeBuilder pTypeBuilder, PropertyInfo pProperty)
         {
             var fieldName = pProperty.Name + "_Field";
 
@@ -117,7 +127,7 @@ namespace MockingbirdDotNet
             propertyBuilder.SetSetMethod(setterBuilder);
         }
 
-        private MethodBuilder BuildGetter(TypeBuilder pTypeBuilder, PropertyInfo pProperty, FieldBuilder pFieldBuilder, MethodAttributes pAttributes)
+        private static MethodBuilder BuildGetter(TypeBuilder pTypeBuilder, PropertyInfo pProperty, FieldBuilder pFieldBuilder, MethodAttributes pAttributes)
         {
             var getterBuilder = pTypeBuilder.DefineMethod("get_" + pProperty.Name, pAttributes, pProperty.PropertyType, Type.EmptyTypes);
             var ilGenerator = getterBuilder.GetILGenerator();
@@ -143,7 +153,7 @@ namespace MockingbirdDotNet
             return getterBuilder;
         }
 
-        private MethodBuilder BuildSetter(TypeBuilder pTypeBuilder, PropertyInfo pProperty, FieldBuilder pFieldBuilder, MethodAttributes pAttributes)
+        private static MethodBuilder BuildSetter(TypeBuilder pTypeBuilder, PropertyInfo pProperty, FieldBuilder pFieldBuilder, MethodAttributes pAttributes)
         {
             var setterBuilder = pTypeBuilder.DefineMethod("set_" + pProperty.Name, pAttributes, null, new Type[] { pProperty.PropertyType });
             var ilGenerator = setterBuilder.GetILGenerator();
